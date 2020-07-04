@@ -6,7 +6,7 @@ defmodule Serum.Project.Loader do
   require Serum.V2.Result, as: Result
   alias Serum.GlobalBindings
   alias Serum.Project
-  alias Serum.Project.ElixirValidator
+  alias Serum.StructValidator
   alias Serum.V2
   alias Serum.V2.Error
 
@@ -40,7 +40,8 @@ defmodule Serum.Project.Loader do
     Result.run do
       file <- V2.File.read(exs_file)
       value <- eval_file(file)
-      ElixirValidator.validate(value)
+      StructValidator.Project.validate(value)
+      validate_blog_config(value)
 
       value |> Project.new() |> Result.return()
     end
@@ -59,4 +60,13 @@ defmodule Serum.Project.Loader do
     e ->
       Result.fail(Exception: [e, __STACKTRACE__], file: file)
   end
+
+  @spec validate_blog_config(map()) :: Result.t({})
+  defp validate_blog_config(project_map)
+
+  defp validate_blog_config(%{blogs: blog_config}) do
+    StructValidator.BlogConfiguration.validate(blog_config)
+  end
+
+  defp validate_blog_config(_), do: Result.return()
 end
